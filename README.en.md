@@ -58,7 +58,8 @@ manages it from then on.
   `/Library/Internet Plug-Ins/JavaAppletPlugin.plugin`; Homebrew's `openjdk` or `temurin` are not
   detected, so this tap does not declare a Java dependency. Install it only if the e-application
   service you use requires the Java interface (see the
-  [official JRE guide](https://www.jpki.go.jp/e-apply/jre.html)).
+  [official JRE guide](https://www.jpki.go.jp/e-apply/jre.html)). The launcher analysis is in
+  [docs/maintenance.md](docs/maintenance.md) (Japanese).
 
 ## Upgrade
 

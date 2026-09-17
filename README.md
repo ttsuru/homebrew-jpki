@@ -78,6 +78,7 @@ Cask の caveats にも表示されますが、ブラウザ側の設定が別途
   `temurin` では認識されないため、この tap では Java を依存関係にしていません。
   利用する電子申請サービスが Java インタフェースを要求する場合だけ、公式手順
   [JRE の導入方法](https://www.jpki.go.jp/e-apply/jre.html) に従って導入してください。
+  ランチャーの解析結果は [docs/maintenance.md](docs/maintenance.md#java-連携アプリjpkiregistbcaapp--jpkiproxysettingappの実態) を参照してください。
 
 公式の手順書: [利用者クライアントソフトの利用方法（Mac）](https://www.jpki.go.jp/download/howto_mac/index.html)
 

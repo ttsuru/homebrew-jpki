@@ -43,6 +43,35 @@
 - `preflight` / `preupgrade` / `postupgrade`
   - 旧形式（bundle package）用のスクリプトで、flat package では実行されない。`preflight` は Oracle JRE を要求する古いコードが残っているが無視される
 
+### Java 連携アプリ（`JPKIRegistBCA.app` / `JPKIProxySetting.app`）の実態
+
+両アプリの `Contents/MacOS/JavaAppLauncher` は Oracle 純正の汎用ランチャーではなく、J-LIS 製の
+約 170KB のプログラムです。インポートしている関数は `fopen` / `fclose` / `system` /
+`CFUserNotificationCreate` だけで、`main` は次の 3 ステップしかありません（arm64 の逆アセンブルで確認）。
+
+1. `fopen("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java", "r")` で
+   **Oracle JRE の実体ファイルの存在を確認**する
+2. 開けなければ `CFUserNotification` でエラーダイアログを出し、`-1` で終了する
+3. 開ければ `system()` で次を実行する（`JPKIRegistBCA` は `-Djava.library.path=...:/Library/Java/Extensions` 付き）
+
+   ```sh
+   export JAVA_HOME=/Library/Internet\ Plug-ins/JavaAppletPlugin.plugin/Contents/Home ; java -jar /Applications/Utilities/JPKI.localized/JPKIProxySetting.app/Contents/Java/JPKIProxySetting.jar
+   ```
+
+`/usr/libexec/java_home` や `/Library/Java/JavaVirtualMachines` の探索、Info.plist の `JVMRuntime` など、
+JRE を動的に探す仕組みはありません。したがって:
+
+- Homebrew の `openjdk` formula や `temurin` cask を入れても、ステップ 1 で弾かれて起動しない
+  （Oracle JRE 無し・Homebrew openjdk 登録済みの Apple Silicon Mac で実行し、終了コード 255、
+  Java プロセス未起動を確認済み）
+- 起動できるのは java.com 配布の Oracle JRE 8（`/Library/Internet Plug-Ins/JavaAppletPlugin.plugin`）
+  を入れた場合だけで、それを提供する Homebrew cask は存在しない
+- ブラウザ利用（`JPKI.app`、PKCS#11 モジュール）は Java を一切参照しない
+
+以上から、この tap では Java を `depends_on` にせず、caveats で「通常は不要、必要なら Oracle JRE 8」と
+案内しています。新バージョンでランチャーが `java_home` ベースに変わった場合は、`nm -u` と
+`otool -tV` で上記を再確認し、caveats を見直してください。
+
 ### 公式アンインストーラ（`JPKIUninstall.command`）が消すもの
 
 `/usr/local/lib/JPKI*`、`/Library/Java/Extensions/*JPKI*`、`/Applications/Utilities/JPKI.localized`、
