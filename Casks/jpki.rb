@@ -66,8 +66,12 @@ cask "jpki" do
       After installation:
         - Safari: enable the "JPKI" extension in Safari > Settings > Extensions.
         - Chrome: install the "JPKI利用者ソフト" extension from the Chrome Web Store.
-        - JPKIRegistBCA.app and JPKIProxySetting.app require a Java runtime,
-          e.g. `brew install --cask temurin`.
+        - Java is NOT required for browser use. Only "Java実行環境への登録"
+          (JPKIRegistBCA.app) and JPKIProxySetting.app need it, and they look
+          for Oracle's JRE 8 from https://www.java.com/ at
+          /Library/Internet Plug-Ins/JavaAppletPlugin.plugin (OpenJDK/Temurin
+          installs are not found). Install it only if your e-application
+          service requires the Java interface.
     EOS
   end
 end

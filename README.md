@@ -71,8 +71,13 @@ Cask の caveats にも表示されますが、ブラウザ側の設定が別途
 
 - **Safari**: 「Safari > 設定 > 機能拡張」で **JPKI** を有効化する
 - **Chrome**: Chrome ウェブストアから **JPKI利用者ソフト** 拡張機能を追加する
-- **Java 連携が必要なサービス**（`JPKIRegistBCA.app` / `JPKIProxySetting.app`）を使う場合は
-  JRE が必要です。例: `brew install --cask temurin`
+- **Java は通常不要です。** 公式の案内どおり、Ver 2.4 以降はブラウザ利用に JRE を必要としません。
+  「Java 実行環境への登録」（`JPKIRegistBCA.app`）と `JPKIProxySetting.app` だけが Java を使い、
+  これらは `/Library/Internet Plug-Ins/JavaAppletPlugin.plugin` にある **Oracle 製 JRE 8**
+  （[java.com](https://www.java.com/ja/)）をハードコードで探します。Homebrew の `openjdk` や
+  `temurin` では認識されないため、この tap では Java を依存関係にしていません。
+  利用する電子申請サービスが Java インタフェースを要求する場合だけ、公式手順
+  [JRE の導入方法](https://www.jpki.go.jp/e-apply/jre.html) に従って導入してください。
 
 公式の手順書: [利用者クライアントソフトの利用方法（Mac）](https://www.jpki.go.jp/download/howto_mac/index.html)
 

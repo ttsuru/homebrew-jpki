@@ -52,7 +52,13 @@ manages it from then on.
 
 - **Safari**: enable the **JPKI** extension in Safari > Settings > Extensions.
 - **Chrome**: add the **JPKI利用者ソフト** extension from the Chrome Web Store.
-- `JPKIRegistBCA.app` and `JPKIProxySetting.app` need a Java runtime, e.g. `brew install --cask temurin`.
+- **Java is normally not needed.** Since Ver 2.4 browser use does not require a JRE. Only
+  `JPKIRegistBCA.app` ("register with the Java runtime") and `JPKIProxySetting.app` use Java, and they
+  hard-code Oracle's JRE 8 from [java.com](https://www.java.com/) at
+  `/Library/Internet Plug-Ins/JavaAppletPlugin.plugin`; Homebrew's `openjdk` or `temurin` are not
+  detected, so this tap does not declare a Java dependency. Install it only if the e-application
+  service you use requires the Java interface (see the
+  [official JRE guide](https://www.jpki.go.jp/e-apply/jre.html)).
 
 ## Upgrade
 

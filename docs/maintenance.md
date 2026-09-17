@@ -21,8 +21,8 @@
 /Applications/JPKI.app                                  # ブラウザ連携（Native Messaging ホスト + Safari 機能拡張）
 /Applications/Utilities/JPKI.localized/                 # ユーティリティ群
   JPKIUtility.app, JPKIChangePassword.app, JPKIChangeAllPassword.app,
-  JPKIUpdateReminderSetting.app, JPKIProxySetting.app (Java),
-  JPKIRegistBCA.app (Java), JPKIUninstall.app
+  JPKIUpdateReminderSetting.app, JPKIProxySetting.app (Java: Oracle JRE 8 固定),
+  JPKIRegistBCA.app (Java: Oracle JRE 8 固定), JPKIUninstall.app
 /usr/local/lib/JPKIPKCS11.dylib                         # PKCS#11 モジュール（署名用・認証用・統合）
 /usr/local/lib/JPKIPKCS11Auth.dylib
 /usr/local/lib/JPKIPKCS11Sign.dylib
@@ -63,6 +63,7 @@ Chrome の `jp.go.jpki.json`、そして `pkgutil --forget jp.go.jpki`。
 | `uninstall quit:` / `launchctl:` | 更新通知 LaunchAgent と常駐し得るアプリを先に止める |
 | `zap` | コンテナと `default.dat*` を削除。`default.dat` は他の電子申請ソフトが参照する共有ファイルなので `uninstall` では触らない |
 | `caveats` | `requires_rosetta`（x86_64 専用バイナリのため）、`brew doctor` 警告の説明、ブラウザ設定、Java |
+| Java を `depends_on` にしない | ブラウザ利用に Java は不要（公式: Ver 2.4 以降）。Java を使う `JPKIRegistBCA.app` / `JPKIProxySetting.app` の `JavaAppLauncher` は `/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java`（Oracle JRE 8）をハードコードしており、Homebrew の `openjdk` / `temurin` では満たせない。公式 cask でも Java は `depends_on` ではなく caveats で案内するのが慣例 |
 | `auto_updates` | 付けない。更新通知アプリは「知らせる」だけで自動更新しない |
 
 ## 新バージョンが出たときの確認手順
