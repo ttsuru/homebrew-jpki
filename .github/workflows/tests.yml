@@ -53,10 +53,15 @@ jobs:
       # readall + style + audit for every formula and cask in the tap.
       - run: brew test-bot --only-tap-syntax
 
+      # setup-homebrew checks the tap out under Homebrew's Taps directory,
+      # not $GITHUB_WORKSPACE, so run actionlint from there.
       - name: Lint GitHub Actions workflows
         if: runner.os == 'Linux'
+        env:
+          TAP_NAME: ${{ steps.set-up-homebrew.outputs.tap-name }}
         run: |
           brew install actionlint
+          cd "$(brew --repository "$TAP_NAME")"
           actionlint
 
   cask:
