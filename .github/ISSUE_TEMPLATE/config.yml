@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 利用者クライアントソフト自体の不具合 / Problems with the JPKI software itself
+    url: https://www.jpki.go.jp/contact/index.html
+    about: マイナンバーカードの読み取りや電子署名の失敗など、ソフトウェア本体の問題は J-LIS のサポート窓口へ。This tap only packages the installer.

@@ -1,0 +1,21 @@
+name: 新バージョンの報告 / New upstream version
+description: 公式サイトで新しいバージョンが公開された / A new version is available on jpki.go.jp
+labels: [bump]
+body:
+  - type: input
+    id: version
+    attributes:
+      label: バージョン / Version
+      placeholder: "3.10"
+    validations:
+      required: true
+  - type: input
+    id: url
+    attributes:
+      label: ダウンロード URL / Download URL
+      placeholder: https://www.jpki.go.jp/client/download/101/JPKIMac_03-10_01-01.dmg
+  - type: textarea
+    id: notes
+    attributes:
+      label: 備考 / Notes
+      description: 対応 macOS の変化、インストーラ構成の変化など

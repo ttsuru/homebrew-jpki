@@ -1,0 +1,32 @@
+From: Tsuyoshi Tsurushima <tsuyoshi.tsurushima@gmail.com>
+Subject: [PATCH] diagnostic: allow JPKI PKCS#11 dylibs in /usr/local/lib
+
+The Japanese government's JPKI client software (公的個人認証サービス
+利用者クライアントソフト, https://www.jpki.go.jp/download/mac.html) is
+required to use the My Number Card for e-Tax and other e-government
+services. Its installer places PKCS#11 modules at fixed paths in
+/usr/local/lib because third-party applications locate them through the
+load-path file /etc/e-gov_app/load_path/default.dat mandated by the J-LIS
+API specification, so they cannot be relocated by the user or by a cask.
+
+The libraries have unique names and do not shadow anything Homebrew
+builds against, so list them like the other vendor dylibs here.
+
+---
+ Library/Homebrew/diagnostic.rb | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/Library/Homebrew/diagnostic.rb b/Library/Homebrew/diagnostic.rb
+--- a/Library/Homebrew/diagnostic.rb
++++ b/Library/Homebrew/diagnostic.rb
+@@ -298,6 +298,10 @@ module Homebrew
+           "sentinel.dylib", # SentinelOne
+           "sentinel-*.dylib", # SentinelOne
+           "libASAF.dylib", # Apple Immersive Audio SDK
++          "JPKIPKCS11.dylib", # JPKI (Japanese Public Key Infrastructure) client
++          "JPKIPKCS11Auth.dylib", # JPKI client
++          "JPKIPKCS11Sign.dylib", # JPKI client
++          "JPKIServiceAPI.dylib", # JPKI client
+         ]
+ 
+         msg = __check_stray_files "/usr/local/lib", "*.dylib", allow_list, <<~EOS

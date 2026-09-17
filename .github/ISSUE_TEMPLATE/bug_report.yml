@@ -1,0 +1,36 @@
+name: 不具合報告 / Bug report
+description: この tap（Cask）に起因する問題を報告する / Report a problem caused by this tap
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        利用者クライアントソフト本体の不具合（カードが読めない、署名に失敗する等）は J-LIS の窓口へお願いします。
+        この tap はインストーラの取得・配置・アンインストールだけを扱います。
+  - type: textarea
+    id: what
+    attributes:
+      label: 何が起きたか / What happened
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: 実行したコマンドと出力 / Command and output
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: config
+    attributes:
+      label: brew config
+      description: "`brew config` の出力を貼り付けてください / Paste the output of `brew config`"
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: brew doctor
+      description: "`brew doctor` の出力（JPKI の Unbrewed dylibs 警告は既知です。docs/brew-doctor.md 参照）"
+      render: shell

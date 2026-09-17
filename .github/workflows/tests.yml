@@ -1,0 +1,137 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions: {}
+
+defaults:
+  run:
+    shell: bash -xeuo pipefail {0}
+
+jobs:
+  tap-syntax:
+    name: tap syntax (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-26]
+        include:
+          - os: ubuntu-latest
+            container:
+              image: ghcr.io/homebrew/brew:main
+              options: --privileged
+    runs-on: ${{ matrix.os }}
+    container: ${{ fromJSON(toJSON(matrix.container)) }} # zizmor: ignore[unpinned-images]
+    permissions:
+      actions: read
+      checks: read
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@f8d4222eb633e65c2a0157383cf80861fc7fae7f # 2026.09.07.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cache Homebrew Bundler RubyGems
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.set-up-homebrew.outputs.gems-path }}
+          key: ${{ matrix.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
+          restore-keys: ${{ matrix.os }}-rubygems-
+
+      - run: brew test-bot --only-cleanup-before
+
+      - run: brew test-bot --only-setup
+
+      # readall + style + audit for every formula and cask in the tap.
+      - run: brew test-bot --only-tap-syntax
+
+      - name: Lint GitHub Actions workflows
+        if: runner.os == 'Linux'
+        run: |
+          brew install actionlint
+          actionlint
+
+  cask:
+    name: cask audit and install (macos-26)
+    runs-on: macos-26
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+    steps:
+      - name: Set up Homebrew
+        id: set-up-homebrew
+        uses: Homebrew/actions/setup-homebrew@f8d4222eb633e65c2a0157383cf80861fc7fae7f # 2026.09.07.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trust this tap
+        env:
+          TAP_NAME: ${{ steps.set-up-homebrew.outputs.tap-name }}
+        run: brew trust --tap "$TAP_NAME"
+
+      - name: Style
+        run: brew style --cask ttsuru/jpki/jpki
+
+      - name: Audit (strict, online)
+        run: brew audit --cask --strict --online ttsuru/jpki/jpki
+
+      - name: Livecheck matches the cask version
+        run: |
+          brew livecheck --cask --debug ttsuru/jpki/jpki
+          brew livecheck --cask --json ttsuru/jpki/jpki | tee livecheck.json
+          brew ruby -e '
+            require "json"
+            result = JSON.parse(File.read("livecheck.json")).first
+            current = result.dig("version", "current")
+            latest = result.dig("version", "latest")
+            abort "livecheck failed: #{result.inspect}" if latest.nil?
+            abort "cask is out of date: #{current} -> #{latest}" if current != latest
+          '
+
+      - name: Fetch and verify checksum
+        run: brew fetch --cask ttsuru/jpki/jpki
+
+      # The vendor installer is a signed, notarized pkg that writes to
+      # /usr/local/lib and /Library; GitHub's macOS runners allow passwordless sudo.
+      - name: Install
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        run: |
+          brew install --cask --verbose ttsuru/jpki/jpki
+          pkgutil --pkg-info jp.go.jpki
+          test -f /usr/local/lib/JPKIPKCS11.dylib
+          test -d /Applications/JPKI.app
+          test -f /Library/Google/Chrome/NativeMessagingHosts/jp.go.jpki.json
+          test -f /private/etc/e-gov_app/load_path/default.dat
+
+      - name: Uninstall and zap
+        if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+        run: |
+          brew uninstall --cask --zap --verbose ttsuru/jpki/jpki
+          if pkgutil --pkg-info jp.go.jpki; then
+            echo "receipt jp.go.jpki still present" >&2
+            exit 1
+          fi
+          for path in \
+            /usr/local/lib/JPKIPKCS11.dylib \
+            /Applications/JPKI.app \
+            /Applications/Utilities/JPKI.localized \
+            /usr/local/lib/JPKI \
+            /Library/LaunchAgents/jp.go.jpki.JPKIUpdateReminder.plist \
+            /private/etc/e-gov_app/load_path/default.dat
+          do
+            if [ -e "$path" ]; then
+              echo "leftover after zap: $path" >&2
+              exit 1
+            fi
+          done
